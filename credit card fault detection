@@ -1,0 +1,167 @@
+# Importing Librarires
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+
+credit=pd.read_csv("creditcard.csv")
+
+credit.head()
+
+credit.shape
+
+credit.info()
+
+credit.describe()
+
+credit.columns
+
+credit.info()
+
+credit['Class'].value_counts()
+
+### data imbalnced 
+
+# Data Preparation
+
+credit.drop('Time',axis=1,inplace=True)
+
+plt.figure(figsize = (14,14))
+plt.title('Credit Card Transactions features correlation plot (Pearson)')
+corr = credit.corr()
+sns.heatmap(corr,xticklabels=corr.columns,yticklabels=corr.columns,linewidths=.1,cmap="Reds")
+plt.show()
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler
+credit['Amountnew']=StandardScaler().fit_transform(credit['Amount'].values.reshape(-1,1))
+credit.drop('Amount',axis=1)
+
+## Splilt the data into train test
+
+X=credit.drop("Class",axis=1)
+y=credit['Class']
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state=10)
+
+# Model bulidings
+
+### 1.  Logistic Regression
+
+from sklearn.linear_model import LogisticRegression
+
+Lr= LogisticRegression(max_iter=1000,)
+
+Lr.fit(X_train,y_train)
+
+Lr.score(X_test,y_test)
+
+Lr.predict_proba(X_test)
+
+predictions = Lr.predict(X_test)
+predictions
+
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_test, predictions)
+
+from sklearn.metrics import classification_report
+print(classification_report(y_test,predictions))
+
+from sklearn.metrics import roc_auc_score, accuracy_score
+print(roc_auc_score(y_test, predictions))
+
+acc=accuracy_score(y_test,predictions)
+
+### 2. Decision Tree
+
+from sklearn.tree import DecisionTreeClassifier
+clf1 = DecisionTreeClassifier(random_state=0)
+
+clf1.fit(X_train,y_train)
+
+clf1.score(X_test,y_test)
+
+clf1.predict_proba(X_test)
+
+predictions1 = clf1.predict(X_test)
+predictions1
+
+confusion_matrix(y_test, predictions1)
+
+print(classification_report(y_test,predictions1))
+
+print(roc_auc_score(y_test, predictions1))
+
+acc1=accuracy_score(y_test,predictions1)
+
+from sklearn.model_selection import GridSearchCV
+mod = GridSearchCV(clf1, param_grid={'max_depth':[2,3,4,5,6]})
+mod.fit(X_train,y_train)
+
+mod.best_estimator_
+
+### 3. Random Forest
+
+from sklearn.ensemble import RandomForestClassifier
+clf2 = RandomForestClassifier(max_depth=3, random_state=0)
+
+clf2.fit(X_train,y_train)
+
+clf2.score(X_test,y_test)
+
+predictions2 = clf2.predict(X_test)
+predictions2
+
+confusion_matrix(y_test, predictions2)
+
+print(classification_report(y_test,predictions2))
+
+print(roc_auc_score(y_test, predictions2))
+
+acc2= accuracy_score(y_test,predictions2)
+
+## 4. Naive bayes
+
+from sklearn.naive_bayes import GaussianNB
+clf3 = GaussianNB()
+
+clf3.fit(X_train,y_train)
+
+clf3.score(X_test,y_test)
+
+predictions3 = clf3.predict(X_test)
+
+confusion_matrix(y_test, predictions2)
+
+confusion_matrix(y_test, predictions3)
+
+print(roc_auc_score(y_test, predictions3))
+
+acc3= accuracy_score(y_test,predictions3)
+
+## 5.KNN
+
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=7)
+
+knn.fit(X_train,y_train)
+
+knn.score(X_test,y_test)
+
+predictions4=knn.predict(X_test)
+
+confusion_matrix(y_test, predictions4)
+
+print(classification_report(y_test,predictions4))
+
+print(roc_auc_score(y_test, predictions4))
+
+acc4=accuracy_score(y_test,predictions4)
+
+model=['logistic','Decision tree','Random Forest','Naive Bayes','knn']
+accuracy=[acc,acc1,acc2,acc3,acc4]
+for i in range(len(model)):
+    print("The accuracy score achieved using "+model[i]+" is: "+str(accuracy[i])+" %")
